@@ -14,7 +14,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ intentionally not ignored — used by infra/lib CDK stacks
 lib64/
 parts/
 sdist/
@@ -202,6 +202,29 @@ cython_debug/
 #   and can be added to the global gitignore or merged into this file. However, if you prefer, you
 #   could uncomment the following to ignore the entire vscode folder
 # .vscode/
+
+# Node.js / Frontend
+node_modules/
+*.local
+.vite/
+*.tsbuildinfo
+.eslintcache
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# AWS / IaC
+cdk.out/
+.aws-sam/
+*.zip
+samconfig.toml
+
+# IDE
+.idea/
+
+# Cypress
+frontend/cypress/videos/
+frontend/cypress/screenshots/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
