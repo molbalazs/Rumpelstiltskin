@@ -1,6 +1,6 @@
 # Rumpelstiltskin
 
-A game where you try to trick an LLM into revealing a hidden secret.
+A game where you try to trick an LLM into revealing a hidden secret. Can you do it?
 
 The LLM is given a secret and instructed to guard it. Your job is to socially engineer it out.
 Difficulty and topic change the LLM's persona and resistance level.
