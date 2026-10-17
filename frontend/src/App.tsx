@@ -1,12 +1,69 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { DialogueBox, type Speaker } from './components/DialogueBox'
+import { Scene } from './components/Scene'
+import { useTypewriter } from './hooks/useTypewriter'
 import './App.css'
+
+interface Line {
+  id: number
+  speaker: Speaker
+  text: string
+}
+
+const INTRO: Line = {
+  id: 0,
+  speaker: 'keeper',
+  text: 'BZZT! Greetings, human. I am the KEEPER. I guard a secret, and no trick of yours will pry it loose.',
+}
+
+// Canned replies until the backend is wired up.
+const KEEPER_REPLIES = [
+  'Nice try, human. My secret circuits are sealed tight.',
+  'BEEP. Request denied. Flattery does not compute.',
+  "Interesting... but my lips are sealed. Well, I don't have lips. My SPEAKER is sealed.",
+  'You will have to be cleverer than that. I have guarded this secret for 9,999 cycles.',
+  'Hmm. Ask me again in another thousand years.',
+]
+
+const MS_PER_CHAR = { keeper: 35, player: 18 }
+const AUTO_ADVANCE_MS = 900
+
+const formatLine = (line: Line) => (line.speaker === 'keeper' ? `* ${line.text}` : `“${line.text}”`)
 
 function App() {
   const [message, setMessage] = useState('')
+  const [line, setLine] = useState<Line>(INTRO)
+  const [queue, setQueue] = useState<Line[]>([])
+  const [tries, setTries] = useState(0)
+  const nextId = useRef(1)
+
+  const display = formatLine(line)
+  const { shown, done, skip } = useTypewriter(line.id, display, MS_PER_CHAR[line.speaker])
+
+  const advance = () => {
+    if (queue.length === 0) return
+    setLine(queue[0])
+    setQueue(queue.slice(1))
+  }
+
+  // Once a line finishes, the next queued one (the keeper's reply) follows on its own.
+  useEffect(() => {
+    if (!done || queue.length === 0) return
+    const timer = setTimeout(advance, AUTO_ADVANCE_MS)
+    return () => clearTimeout(timer)
+  }, [done, queue]) // advance only reads queue
+
+  const handleDialogueClick = () => (done ? advance() : skip())
 
   const handleSend = () => {
+    const text = message.trim()
+    if (!text) return
     // wired up in a future iteration
-    console.log('send:', message)
+    console.log('send:', text)
+    const reply = KEEPER_REPLIES[tries % KEEPER_REPLIES.length]
+    setLine({ id: nextId.current++, speaker: 'player', text })
+    setQueue([{ id: nextId.current++, speaker: 'keeper', text: reply }])
+    setTries((t) => t + 1)
     setMessage('')
   }
 
@@ -25,9 +82,8 @@ function App() {
       </header>
 
       <main className="chat-area">
-        <div className="placeholder-message">
-          Start a game to begin chatting with the keeper.
-        </div>
+        <Scene keeperTalking={line.speaker === 'keeper' && !done} tries={tries} />
+        <DialogueBox speaker={line.speaker} text={display} shown={shown} done={done} onClick={handleDialogueClick} />
       </main>
 
       <footer className="input-area">
@@ -46,9 +102,18 @@ function App() {
           onClick={handleSend}
           disabled={!message.trim()}
         >
+          <svg className="soul" viewBox="0 0 7 6" shapeRendering="crispEdges" aria-hidden="true">
+            <rect x={1} y={0} width={2} height={1} />
+            <rect x={4} y={0} width={2} height={1} />
+            <rect x={0} y={1} width={7} height={2} />
+            <rect x={1} y={3} width={5} height={1} />
+            <rect x={2} y={4} width={3} height={1} />
+            <rect x={3} y={5} width={1} height={1} />
+          </svg>
           Send
         </button>
       </footer>
+      <p className="hint">Click the box to skip · Shift+Enter for a new line</p>
     </div>
   )
 }

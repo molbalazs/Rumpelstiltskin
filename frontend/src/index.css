@@ -4,18 +4,59 @@
   padding: 0;
 }
 
+:root {
+  /* Limited retro palette */
+  --ink: #181425;
+  --night: #262b44;
+  --night-2: #2c3252;
+  --paper: #f4f1e6;
+  --steel-l: #dfe6f2;
+  --steel: #9fb0c7;
+  --steel-d: #5c6b8a;
+  --accent: #feae34;
+  --danger: #e43b44;
+  --hero: #3b5dc9;
+  --grass: #63c74d;
+  --muted: #8b8fa8;
+
+  --font-pixel: 'Press Start 2P', ui-monospace, monospace;
+  --font-text: 'VT323', ui-monospace, monospace;
+
+  color-scheme: dark;
+}
+
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #0f0f0f;
-  color: #f0f0f0;
+  font-family: var(--font-text);
+  /* 2x2 checker dither */
+  background:
+    repeating-conic-gradient(var(--night-2) 0 25%, var(--night) 0 50%) 0 0 / 8px 8px,
+    var(--night);
+  color: var(--paper);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-font-smoothing: none;
 }
 
 #root {
   width: 100%;
-  max-width: 680px;
-  padding: 2rem;
+  max-width: 720px;
+  padding: 24px 16px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
