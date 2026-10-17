@@ -31,7 +31,6 @@ export class ApiStack extends cdk.Stack {
       environment: {
         RATE_LIMIT_TABLE: props.rateLimitTable.tableName,
         GLOBAL_DAILY_CAP: '100',
-        USER_DAILY_CAP: '10',
         LLM_PROVIDER: 'mock',
       },
       timeout: cdk.Duration.seconds(30),

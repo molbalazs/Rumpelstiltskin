@@ -15,7 +15,6 @@ make invoke        # local Lambda invoke
 
 | Variable          | Description                              | Default |
 |-------------------|------------------------------------------|---------|
-| GLOBAL_DAILY_CAP  | Max total LLM calls per day (all users)  | 100     |
-| USER_DAILY_CAP    | Max LLM calls per user per day           | 10      |
+| GLOBAL_DAILY_CAP  | Max total LLM calls per day              | 100     |
 | LLM_PROVIDER      | LLM adapter to use (mock/openai)         | mock    |
 | LLM_API_KEY       | API key for the LLM provider             | -       |

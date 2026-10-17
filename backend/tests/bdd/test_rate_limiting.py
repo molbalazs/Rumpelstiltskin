@@ -64,8 +64,8 @@ def table_exists(rate_limit_table):
     return rate_limit_table
 
 
-@when("a user makes a call", target_fixture="result")
-def user_makes_call(table):
+@when("a call is made", target_fixture="result")
+def call_is_made(table):
     # Import here so the module-level env var is set first
     import sys
     import importlib
@@ -73,7 +73,6 @@ def user_makes_call(table):
     os.environ["AWS_ENDPOINT_URL"] = LOCALSTACK_ENDPOINT
     os.environ["RATE_LIMIT_TABLE"] = TABLE_NAME
     os.environ["GLOBAL_DAILY_CAP"] = "100"
-    os.environ["USER_DAILY_CAP"] = "10"
     os.environ["AWS_DEFAULT_REGION"] = AWS_REGION
     os.environ["AWS_ACCESS_KEY_ID"] = "test"
     os.environ["AWS_SECRET_ACCESS_KEY"] = "test"
@@ -83,7 +82,7 @@ def user_makes_call(table):
         importlib.reload(sys.modules["rate_limiter"])
     from rate_limiter import check_and_increment
 
-    return check_and_increment("test-user-bdd")
+    return check_and_increment()
 
 
 @then("the call is allowed")

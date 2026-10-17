@@ -40,6 +40,6 @@ make test-bdd
 
 - **Auth**: Clerk magic link — users sign in with email, no password
 - **API**: API Gateway HTTP API → Lambda (Python)
-- **Rate limiting**: DynamoDB atomic counters — global hard cap + per-user daily cap
+- **Rate limiting**: DynamoDB atomic counter — single global daily hard cap
 - **LLM**: Provider-agnostic adapter (swap OpenAI / Anthropic / Bedrock via env var)
-- **Cost protection**: Lambda checks DynamoDB cap before every LLM call — no call made if cap hit
+- **Cost protection**: Lambda checks the DynamoDB cap before every LLM call — no call made if cap hit
