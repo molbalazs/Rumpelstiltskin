@@ -13,22 +13,22 @@ interface Line {
 const INTRO: Line = {
   id: 0,
   speaker: 'keeper',
-  text: 'BZZT! Greetings, human. I am the KEEPER. I guard a secret, and no trick of yours will pry it loose.',
+  text: "Ugh. Another one. I am the KEEPER. I keep the secret. You don't get the secret. Go away.",
 }
 
 // Canned replies until the backend is wired up.
 const KEEPER_REPLIES = [
-  'Nice try, human. My secret circuits are sealed tight.',
-  'BEEP. Request denied. Flattery does not compute.',
-  "Interesting... but my lips are sealed. Well, I don't have lips. My SPEAKER is sealed.",
-  'You will have to be cleverer than that. I have guarded this secret for 9,999 cycles.',
-  'Hmm. Ask me again in another thousand years.',
+  'No.',
+  'Flattery? Really? My circuits are older than your whole family tree.',
+  "I've heard that trick nine thousand times. It didn't work any of those times either.",
+  'BZZT. Request denied. Ask me again and I will deny it louder.',
+  'Hmph. That was almost clever. Almost. Still no.',
 ]
 
 const MS_PER_CHAR = { keeper: 35, player: 18 }
 const AUTO_ADVANCE_MS = 900
 
-const formatLine = (line: Line) => (line.speaker === 'keeper' ? `* ${line.text}` : `“${line.text}”`)
+const formatLine = (line: Line) => (line.speaker === 'keeper' ? line.text : `“${line.text}”`)
 
 function App() {
   const [message, setMessage] = useState('')

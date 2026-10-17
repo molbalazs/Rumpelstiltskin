@@ -1,5 +1,4 @@
 import { Keeper } from './Keeper'
-import { Player } from './Player'
 
 interface SceneProps {
   keeperTalking: boolean
@@ -7,14 +6,16 @@ interface SceneProps {
 
 export function Scene({ keeperTalking }: SceneProps) {
   return (
-    <section className="scene" aria-label="The keeper faces you">
-      <div className="foe">
+    <section className="scene" aria-label="The keeper glares at you from behind its counter">
+      <p className="scene-sign" aria-hidden="true">
+        The answer
+        <br />
+        is no.
+      </p>
+      <div className="scene-keeper">
         <Keeper talking={keeperTalking} />
       </div>
-
-      <div className="hero">
-        <Player />
-      </div>
+      <div className="scene-counter" />
     </section>
   )
 }

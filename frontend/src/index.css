@@ -5,38 +5,63 @@
 }
 
 :root {
-  /* Limited retro palette */
-  --ink: #181425;
-  --night: #262b44;
-  --night-2: #2c3252;
-  --paper: #f4f1e6;
-  --steel-l: #dfe6f2;
-  --steel: #9fb0c7;
-  --steel-d: #5c6b8a;
-  --accent: #feae34;
-  --danger: #e43b44;
-  --hero: #3b5dc9;
-  --grass: #63c74d;
-  --muted: #8b8fa8;
+  /* Monochrome: ink on paper, plus greys used sparingly */
+  --ink: #1a1a1a;
+  --paper: #f1efe8;
+  --wash: #dedbd2;
+  --wash-dot: #cbc7bc;
+  --grey: #7d7a73;
 
-  --font-pixel: 'Press Start 2P', ui-monospace, monospace;
+  /* One art pixel. Everything snaps to multiples of this. */
+  --u: 4px;
+
+  /* 1-bit dither tiles, used as masks over a solid colour */
+  --dither-50: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' shape-rendering='crispEdges'%3E%3Crect width='1' height='1'/%3E%3Crect x='1' y='1' width='1' height='1'/%3E%3C/svg%3E");
+  --dither-25: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' shape-rendering='crispEdges'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E");
+  --dither-12: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Crect width='1' height='1'/%3E%3Crect x='2' y='2' width='1' height='1'/%3E%3C/svg%3E");
+
+  --font-pixel: 'Silkscreen', ui-monospace, monospace;
   --font-text: 'VT323', ui-monospace, monospace;
 
-  color-scheme: dark;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ecebe5;
+    --paper: #171717;
+    --wash: #222222;
+    --wash-dot: #2e2e2e;
+    --grey: #8a8780;
+  }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --u: 3px;
+  }
 }
 
 body {
   font-family: var(--font-text);
-  /* 2x2 checker dither */
-  background:
-    repeating-conic-gradient(var(--night-2) 0 25%, var(--night) 0 50%) 0 0 / 8px 8px,
-    var(--night);
-  color: var(--paper);
+  background: var(--wash);
+  color: var(--ink);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   -webkit-font-smoothing: none;
+}
+
+/* Sparse dither over the whole page */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--wash-dot);
+  -webkit-mask: var(--dither-12) 0 0 / calc(var(--u) * 4) repeat;
+  mask: var(--dither-12) 0 0 / calc(var(--u) * 4) repeat;
 }
 
 #root {
