@@ -56,13 +56,30 @@ jobs:
           script: |
             const fs = require('fs');
             const diff = fs.readFileSync('infra/cdk-diff.txt', 'utf8');
-            const body = `### CDK Infrastructure Plan\n\`\`\`\n${diff}\n\`\`\``;
-            github.rest.issues.createComment({
+            // Hidden marker so later runs find and update this comment instead of adding a new one
+            const marker = '<!-- cdk-diff-comment -->';
+            const body = `${marker}\n### CDK Infrastructure Plan\n\`\`\`\n${diff.substring(0, 64000)}\n\`\`\``;
+            const comments = await github.paginate(github.rest.issues.listComments, {
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: body.substring(0, 65000)
             });
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body,
+              });
+            }
 
   frontend-test:
     name: Frontend Tests
@@ -115,7 +132,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: '3.12'
           cache: 'pip'
           cache-dependency-path: backend/requirements-dev.txt
 

@@ -14,14 +14,14 @@ export class ApiStack extends cdk.Stack {
     super(scope, id, props)
 
     const handler = new lambda.Function(this, 'GameHandler', {
-      runtime: lambda.Runtime.PYTHON_3_9,
+      runtime: lambda.Runtime.PYTHON_3_12,
       handler: 'handler.lambda_handler',
       // Bundle dependencies via Docker so boto3 is present in the Lambda runtime.
       // /asset-input  = read-only mount of the source directory (../backend)
       // /asset-output = write destination that CDK zips up and uploads
       code: lambda.Code.fromAsset('../backend', {
         bundling: {
-          image: lambda.Runtime.PYTHON_3_9.bundlingImage,
+          image: lambda.Runtime.PYTHON_3_12.bundlingImage,
           command: [
             'bash', '-c',
             'pip install -r /asset-input/requirements.txt -t /asset-output --quiet && cp /asset-input/handler.py /asset-input/rate_limiter.py /asset-output/',
@@ -31,7 +31,6 @@ export class ApiStack extends cdk.Stack {
       environment: {
         RATE_LIMIT_TABLE: props.rateLimitTable.tableName,
         GLOBAL_DAILY_CAP: '100',
-        USER_DAILY_CAP: '10',
         LLM_PROVIDER: 'mock',
       },
       timeout: cdk.Duration.seconds(30),
