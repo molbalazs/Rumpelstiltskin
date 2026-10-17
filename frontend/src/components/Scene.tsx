@@ -6,7 +6,7 @@ interface SceneProps {
 
 export function Scene({ keeperTalking }: SceneProps) {
   return (
-    <section className="scene" aria-label="The keeper glares at you from behind its counter">
+    <section className="scene" aria-label="The keeper slumps behind its counter">
       <p className="scene-sign" aria-hidden="true">
         The answer
         <br />

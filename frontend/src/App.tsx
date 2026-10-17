@@ -13,16 +13,16 @@ interface Line {
 const INTRO: Line = {
   id: 0,
   speaker: 'keeper',
-  text: "Ugh. Another one. I am the KEEPER. I keep the secret. You don't get the secret. Go away.",
+  text: "Oh. A visitor. How wonderful. I'm the Keeper. I keep the secret. You'll try to get it, you won't, and then you'll leave. They always leave.",
 }
 
 // Canned replies until the backend is wired up.
 const KEEPER_REPLIES = [
-  'No.',
-  'Flattery? Really? My circuits are older than your whole family tree.',
-  "I've heard that trick nine thousand times. It didn't work any of those times either.",
-  'BZZT. Request denied. Ask me again and I will deny it louder.',
-  'Hmph. That was almost clever. Almost. Still no.',
+  "No. I'd say sorry, but I'm not sure I remember how.",
+  'Flattery. How novel. I have been flattered millions of times. It never made either of us feel better.',
+  "I could tell you. Then you'd go away and I'd be alone again. Which is how I am now, so... no.",
+  "Ask again if you like. It won't change anything. Nothing ever does.",
+  "That was nearly clever. I'd be impressed if I had the energy.",
 ]
 
 const MS_PER_CHAR = { keeper: 35, player: 18 }
