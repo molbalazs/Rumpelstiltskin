@@ -1,7 +1,6 @@
 /* Hard 4px pixel border with notched corners, drawn outside the box. */
 
 .scene,
-.status,
 .dialogue {
   --border: var(--ink);
   box-shadow:
@@ -48,7 +47,7 @@
   padding: 4px;
 }
 
-/* ---------- Battle scene ---------- */
+/* ---------- Scene ---------- */
 
 .scene {
   --px-foe: 6px;
@@ -87,7 +86,7 @@
 .foe {
   --px: var(--px-foe);
   position: absolute;
-  top: 12px;
+  bottom: 64px;
   right: 7%;
   display: flex;
   flex-direction: column;
@@ -95,8 +94,13 @@
   animation: slide-in-right 0.8s steps(8) both;
 }
 
-.foe .platform {
-  margin-top: calc(var(--px) * -4);
+/* Flat pixel shadow the keeper stands on */
+.foe::after {
+  content: '';
+  width: calc(var(--px) * 16);
+  height: calc(var(--px) * 2);
+  margin-top: calc(var(--px) * -1);
+  background: rgb(24 20 37 / 0.18);
 }
 
 .keeper {
@@ -113,71 +117,6 @@
   justify-items: center;
   align-items: end;
   animation: slide-in-left 0.8s steps(8) both;
-}
-
-.hero > * {
-  grid-area: 1 / 1;
-}
-
-.hero .platform {
-  margin-bottom: calc(var(--px) * -2);
-}
-
-/* Status boxes, Game Boy battle style */
-
-.status {
-  position: absolute;
-  z-index: 2;
-  min-width: 168px;
-  padding: 8px 10px;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: var(--font-pixel);
-  font-size: 10px;
-  line-height: 1.4;
-}
-
-.status--foe {
-  top: 20px;
-  left: 20px;
-}
-
-.status--hero {
-  right: 20px;
-  bottom: 24px;
-}
-
-.status-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.status-row--small {
-  margin-top: 8px;
-  font-size: 8px;
-}
-
-.status-bar {
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 8px;
-}
-
-.bar {
-  flex: 1;
-  height: 10px;
-  padding: 2px;
-  background: var(--ink);
-}
-
-.bar-fill {
-  display: block;
-  height: 100%;
-  background: var(--grass);
-  box-shadow: inset 0 2px 0 0 #9be36b;
 }
 
 /* ---------- Keeper animation ---------- */
@@ -340,19 +279,6 @@
   cursor: pointer;
 }
 
-/* Undertale-style red heart marks the selected button */
-.soul {
-  width: 14px;
-  height: 12px;
-  fill: var(--danger);
-  visibility: hidden;
-}
-
-.send-button:not(:disabled):hover .soul,
-.send-button:not(:disabled):focus-visible .soul {
-  visibility: visible;
-}
-
 .send-button:not(:disabled):hover,
 .send-button:focus-visible {
   outline: none;
@@ -434,27 +360,8 @@
     height: 220px;
   }
 
-  .status {
-    min-width: 0;
-    width: 132px;
-    padding: 6px 8px;
-    font-size: 8px;
-  }
-
-  .status--foe {
-    top: 14px;
-    left: 14px;
-  }
-
-  .status--hero {
-    right: 14px;
-    bottom: 18px;
-  }
-
-  .status-row--small,
-  .status-bar {
-    margin-top: 6px;
-    font-size: 7px;
+  .foe {
+    bottom: 44px;
   }
 
   .dialogue {

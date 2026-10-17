@@ -1,12 +1,12 @@
 import { PixelSprite } from './PixelSprite'
 
-// Back view of the player, cropped at the waist like a Game Boy battle scene.
-// K outline, R cap, W cap logo, H hair, S skin, B shirt, D shirt shadow.
+// Back view of the player, seen over the shoulder.
+// K outline, R beanie, W beanie stripe, H hair, S skin, B shirt, D shirt shadow.
 const PLAYER_GRID = [
   '.....KKKKKK.....',
   '....KRRRRRRK....',
   '...KRRRRRRRRK...',
-  '..KRRRRWWRRRRK..',
+  '..KWWWWWWWWWWK..',
   '..KRRRRRRRRRRK..',
   '.KKKKKKKKKKKKKK.',
   '..KHHHHHHHHHHK..',
@@ -22,8 +22,8 @@ const PLAYER_GRID = [
 
 const PLAYER_PALETTE = {
   K: '#181425',
-  R: '#e43b44',
-  W: '#ffffff',
+  R: '#feae34',
+  W: '#f77622',
   H: '#733e39',
   S: '#e4a672',
   B: '#3b5dc9',
