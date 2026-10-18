@@ -225,6 +225,8 @@ samconfig.toml
 # Cypress
 frontend/cypress/videos/
 frontend/cypress/screenshots/
+e2e/cypress/videos/
+e2e/cypress/screenshots/
 # Temporary file for partial code execution
 tempCodeRunnerFile.py
 
