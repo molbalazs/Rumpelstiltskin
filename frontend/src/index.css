@@ -5,68 +5,66 @@
 }
 
 :root {
-  /* Monochrome: ink on paper, plus greys used sparingly */
-  --ink: #1a1a1a;
-  --paper: #f1efe8;
-  --wash: #dedbd2;
-  --wash-dot: #cbc7bc;
-  --grey: #7d7a73;
+  /* Ink and grey washes on kraft paper */
+  --kraft: #c4ae87;
+  --paper: #d8c6a2;
+  --ink: #2b2620;
+  --soft: rgb(43 38 32 / 0.45);
+  --wash: rgb(43 38 32 / 0.16);
+  --wash-strong: rgb(43 38 32 / 0.3);
+  --metal: #e4d8bf;
+  --metal-d: #b8a684;
+  --screen: #f4eddd;
+  --hl: #fdf9f0;
 
-  /* One art pixel. Everything snaps to multiples of this. */
-  --u: 4px;
+  /* Irregular corners make boxes look hand-drawn */
+  --sketch-radius: 6px 14px 5px 12px / 12px 5px 14px 6px;
 
-  /* 1-bit dither tiles, used as masks over a solid colour */
-  --dither-50: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' shape-rendering='crispEdges'%3E%3Crect width='1' height='1'/%3E%3Crect x='1' y='1' width='1' height='1'/%3E%3C/svg%3E");
-  --dither-25: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='2' height='2' shape-rendering='crispEdges'%3E%3Crect width='1' height='1'/%3E%3C/svg%3E");
-  --dither-12: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4' shape-rendering='crispEdges'%3E%3Crect width='1' height='1'/%3E%3Crect x='2' y='2' width='1' height='1'/%3E%3C/svg%3E");
-
-  --font-pixel: 'Silkscreen', ui-monospace, monospace;
-  --font-text: 'VT323', ui-monospace, monospace;
+  --font-title: 'Cabin Sketch', 'Comic Sans MS', cursive;
+  --font-hand: 'Patrick Hand', 'Comic Sans MS', cursive;
 
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ink: #ecebe5;
-    --paper: #171717;
-    --wash: #222222;
-    --wash-dot: #2e2e2e;
-    --grey: #8a8780;
-  }
-}
-
-@media (max-width: 560px) {
-  :root {
-    --u: 3px;
+    --kraft: #1d1a16;
+    --paper: #29251f;
+    --ink: #ece3d1;
+    --soft: rgb(236 227 209 / 0.42);
+    --wash: rgb(0 0 0 / 0.3);
+    --wash-strong: rgb(0 0 0 / 0.45);
+    --metal: #3d362c;
+    --metal-d: #2f2a22;
+    --screen: #514839;
+    --hl: rgb(255 248 232 / 0.75);
   }
 }
 
 body {
-  font-family: var(--font-text);
-  background: var(--wash);
+  font-family: var(--font-hand);
+  background: var(--kraft);
   color: var(--ink);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  -webkit-font-smoothing: none;
 }
 
-/* Sparse dither over the whole page */
+/* Paper fibre texture */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: var(--wash-dot);
-  -webkit-mask: var(--dither-12) 0 0 / calc(var(--u) * 4) repeat;
-  mask: var(--dither-12) 0 0 / calc(var(--u) * 4) repeat;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.1 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 #root {
   width: 100%;
-  max-width: 720px;
+  max-width: 760px;
   padding: 24px 16px;
 }
 

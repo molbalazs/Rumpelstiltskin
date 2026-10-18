@@ -24,11 +24,8 @@ export function DialogueBox({ speaker, text, shown, done, onClick }: DialogueBox
         <span className="dialogue-ghost">{text.slice(shown.length)}</span>
       </p>
       {done && (
-        <svg className="dialogue-cursor" viewBox="0 0 7 4" shapeRendering="crispEdges" aria-hidden="true">
-          <rect x={0} y={0} width={7} height={1} />
-          <rect x={1} y={1} width={5} height={1} />
-          <rect x={2} y={2} width={3} height={1} />
-          <rect x={3} y={3} width={1} height={1} />
+        <svg className="dialogue-cursor" viewBox="0 0 20 14" aria-hidden="true">
+          <path d="M 2 2.5 Q 10 1 18 3 Q 14 8 10.5 12.5 Q 6 8 2 2.5 Z" />
         </svg>
       )}
     </div>

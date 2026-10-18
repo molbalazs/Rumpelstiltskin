@@ -2,218 +2,181 @@ interface KeeperProps {
   talking: boolean
 }
 
-// The sprite is drawn on an 88 × 100 pixel canvas. Shapes are painted into
-// a grid at module load (1-pixel outlines, dithered shading), then each row
-// is merged into runs and rendered as crisp SVG rects. Tones map to CSS
-// classes (.k ink, .p paper, .g grey) so the sprite follows the theme.
+// The keeper is drawn upright, then the whole figure is leaned back 12° about
+// the point between its feet, so its shoulder and head rest on the vault door.
+// The boots stay flat on the floor (y = 446). Coordinates are scene units.
 
-type Tone = 'k' | 'p' | 'g'
-type Plot = (x: number, y: number, tone: Tone) => void
-interface Run {
-  x: number
-  y: number
-  w: number
-  tone: Tone
-}
+const PIVOT = '560 446'
 
-const W = 88
-const H = 100
-
-function paint(draw: (set: Plot) => void): Run[] {
-  const cells: (Tone | null)[] = new Array(W * H).fill(null)
-  draw((x, y, tone) => {
-    if (x >= 0 && x < W && y >= 0 && y < H) cells[y * W + x] = tone
-  })
-  const runs: Run[] = []
-  for (let y = 0; y < H; y++) {
-    let x = 0
-    while (x < W) {
-      const tone = cells[y * W + x]
-      let end = x + 1
-      while (end < W && cells[y * W + end] === tone) end++
-      if (tone) runs.push({ x, y, w: end - x, tone })
-      x = end
-    }
-  }
-  return runs
-}
-
-/** Ordered 1-bit dither: how much ink to show for shade 0 (none) to 1 (half). */
-const dither = (x: number, y: number, shade: number) =>
-  shade > 0.75
-    ? (x + y) % 2 === 0
-    : shade > 0.5
-      ? x % 2 === 0 && y % 2 === 0
-      : shade > 0.3
-        ? x % 4 === 0 && y % 4 === (x % 8 === 0 ? 0 : 2)
-        : false
-
-type Inside = (x: number, y: number) => boolean
-
-/** Paper fill with a 1-pixel ink outline and optional dithered shading. */
-function shape(set: Plot, inside: Inside, box: [number, number, number, number], shade?: (x: number, y: number) => number) {
-  const [x0, y0, x1, y1] = box
-  for (let y = y0; y <= y1; y++) {
-    for (let x = x0; x <= x1; x++) {
-      if (!inside(x, y)) continue
-      const edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1)
-      set(x, y, edge || (shade && dither(x, y, shade(x, y))) ? 'k' : 'p')
-    }
-  }
-}
-
-const ellipse = (cx: number, cy: number, a: number, b: number): Inside => (x, y) =>
-  ((x + 0.5 - cx) / a) ** 2 + ((y + 0.5 - cy) / b) ** 2 <= 1
-
-/** Light from the top left: shade grows toward the right, keeping the face clear. */
-const lit = (cx: number, cy: number, a: number, b: number) => (x: number, y: number) =>
-  ((x + 0.5 - cx) / a) * 0.8 + ((y + 0.5 - cy) / b) * 0.45 - 0.1
-
-// ---------- Static body ----------
-
-const HEAD = { cx: 44, cy: 38, a: 31, b: 26 }
-const EYES = [31, 57]
-
-// Torso half-width: narrow, rounded shoulders that slump outward.
-const torso = (y: number) => 13 + (y - 68) * 0.4 - (y < 72 ? (72 - y) * 1.2 : 0)
-
-const BODY = paint((set) => {
-  // Neck
-  for (let y = 62; y <= 69; y++) {
-    for (let x = 40; x <= 47; x++) set(x, y, x === 40 || x === 47 || y % 2 === 0 ? 'k' : 'p')
-  }
-
-  // Torso, then long arms hanging at its sides
-  const inTorso: Inside = (x, y) => y >= 68 && y < H && Math.abs(x + 0.5 - 44) <= torso(y)
-  shape(set, inTorso, [10, 68, 78, H - 1], (x, y) => ((x + 0.5 - 44) / torso(y)) * 0.7 + 0.15)
-  const arm = (side: -1 | 1): Inside => (x, y) => {
-    if (y < 71 || y >= H) return false
-    const inner = 44 + side * (torso(y) + 2)
-    const outer = inner + side * 4
-    return side < 0 ? x >= outer && x <= inner : x >= inner && x <= outer
-  }
-  shape(set, arm(-1), [0, 71, 44, H - 1], () => 0.35)
-  shape(set, arm(1), [44, 71, W - 1, H - 1], () => 0.8)
-
-  // Padlock on the chest: it is guarding a secret, after all
-  for (let x = 40; x <= 48; x++) set(x, 75, 'k')
-  for (let y = 76; y <= 79; y++) {
-    set(39, y, 'k')
-    set(49, y, 'k')
-  }
-  shape(set, (x, y) => x >= 37 && x <= 51 && y >= 80 && y <= 90, [37, 80, 51, 90], (x) => (x >= 49 ? 0.8 : 0))
-  for (const [x, y] of [[43, 83], [44, 83], [45, 83], [43, 84], [44, 84], [45, 84], [44, 85], [44, 86], [44, 87]]) set(x, y, 'k')
-
-  // Ears, behind the head
-  shape(set, ellipse(13, 40, 4, 7), [8, 32, 18, 48], () => 0.6)
-  shape(set, ellipse(75, 40, 4, 7), [70, 32, 80, 48], () => 0.8)
-
-  // The big round head
-  const { cx, cy, a, b } = HEAD
-  shape(set, ellipse(cx, cy, a, b), [12, 11, 76, 65], lit(cx, cy, a, b))
-  // Soft highlight on the dome
-  for (let t = 35; t <= 80; t += 4) {
-    const r = (t * Math.PI) / 180
-    set(Math.round(cx - (a - 5) * Math.cos(r)), Math.round(cy - (b - 5) * Math.sin(r)), 'g')
-  }
-
-  // Sad brows: inner ends raised
-  for (let x = 23; x <= 36; x++) set(x, Math.round(30 - (x - 23) * 0.28), 'k')
-  for (let x = 52; x <= 65; x++) set(x, Math.round(26.4 + (x - 52) * 0.28), 'k')
-
-  // Eye sockets
-  for (const ex of EYES) {
-    const socket = ellipse(ex, 39, 8, 7.5)
-    for (let y = 31; y <= 47; y++) for (let x = ex - 9; x <= ex + 9; x++) if (socket(x, y)) set(x, y, 'k')
-  }
-})
-
-// ---------- Animated parts ----------
-
-// Eyes: big round lenses under heavy, drooping lids (outer corners lower).
-const LENSES = paint((set) => {
-  EYES.forEach((ex, i) => {
-    const lid = (x: number) => 36.5 + (x + 0.5 - ex) * (i === 0 ? -0.3 : 0.3)
-    const inside: Inside = (x, y) => ellipse(ex, 40, 5.6, 5.6)(x, y) && y + 0.5 >= lid(x + 0.5)
-    for (let y = 33; y <= 47; y++) {
-      for (let x = ex - 7; x <= ex + 7; x++) {
-        if (!inside(x, y)) continue
-        const edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y + 1)
-        set(x, y, edge ? 'g' : 'p')
-      }
-    }
-  })
-})
-
-// Pupils rest low: it can't be bothered to look up.
-const PUPILS = paint((set) => {
-  for (const ex of EYES) {
-    const pupil = ellipse(ex, 42.5, 2, 2)
-    for (let y = 39; y <= 46; y++) for (let x = ex - 3; x <= ex + 3; x++) if (pupil(x, y)) set(x, y, 'k')
-  }
-})
-
-const MOUTH_IDLE = paint((set) => {
-  for (let x = 40; x <= 47; x++) set(x, 55, 'k')
-  set(39, 56, 'k')
-  set(48, 56, 'k')
-})
-
-const MOUTH_A = paint((set) => {
-  for (let y = 54; y <= 56; y++) for (let x = 40; x <= 47; x++) set(x, y, y === 55 && x > 40 && x < 47 ? 'p' : 'k')
-})
-
-const MOUTH_B = paint((set) => {
-  for (let y = 54; y <= 55; y++) for (let x = 41; x <= 46; x++) set(x, y, 'k')
-})
-
-// A small personal rain cloud, out while it talks.
-const CLOUD = paint((set) => {
-  const puffs = [ellipse(58, 6, 4, 4), ellipse(64, 5, 5, 5), ellipse(70, 7, 3.5, 3.5)]
-  const inside: Inside = (x, y) => y <= 9 && puffs.some((p) => p(x, y))
-  shape(set, inside, [53, 0, 75, 9], (_, y) => (y >= 7 ? 0.6 : 0))
-})
-
-const drops = (points: number[][]) =>
-  paint((set) => {
-    for (const [x, y] of points) {
-      set(x, y, 'k')
-      set(x, y + 1, 'k')
-    }
-  })
-const RAIN_A = drops([[57, 11], [63, 13], [69, 11]])
-const RAIN_B = drops([[60, 12], [66, 11], [72, 13]])
-
-function Layer({ runs, className }: { runs: Run[]; className?: string }) {
+/** A thin metal limb: ink outline, metal core, ribbed with dashes. */
+function Tube({ d, w = 10 }: { d: string; w?: number }) {
   return (
-    <g className={className}>
-      {runs.map((r) => (
-        <rect key={`${r.x}-${r.y}`} className={r.tone} x={r.x} y={r.y} width={r.w} height={1} />
-      ))}
+    <g>
+      <path d={d} className="tube-out" style={{ strokeWidth: w + 5 }} />
+      <path d={d} className="tube-in" style={{ strokeWidth: w }} />
+      <path d={d} className="ribs" style={{ strokeWidth: w - 1 }} />
+    </g>
+  )
+}
+
+function Joint({ x, y, r = 7 }: { x: number; y: number; r?: number }) {
+  return (
+    <g>
+      <circle className="metal" cx={x} cy={y} r={r} strokeWidth={2.2} />
+      <path className="hl" d={`M ${x - r * 0.55} ${y - r * 0.1} Q ${x - r * 0.45} ${y - r * 0.6} ${x} ${y - r * 0.65}`} strokeWidth={1.6} />
     </g>
   )
 }
 
 /**
- * The keeper: a big, round-headed, thoroughly fed-up robot guarding the
- * secret from behind a counter. Idle it slumps, blinks slowly and glances up;
- * while talking it mumbles and a little rain cloud follows it around.
+ * The keeper: a tall, boxy, thoroughly tired robot with an old CRT for a head,
+ * slumped against the vault door it guards. Idle it sighs, blinks slowly and
+ * its gauge twitches; while talking it nods, mumbles and a little rain cloud
+ * follows it around.
  */
 export function Keeper({ talking }: KeeperProps) {
   return (
-    <div className={`keeper${talking ? ' is-talking' : ''}`}>
-      <svg className="keeper-sprite" viewBox={`0 0 ${W} ${H}`} shapeRendering="crispEdges" role="img">
-        <title>The keeper: a big, round-headed robot with sad, droopy eyes</title>
-        <Layer runs={BODY} />
-        <Layer runs={LENSES} className="lenses" />
-        <Layer runs={PUPILS} className="pupils" />
-        <Layer runs={MOUTH_IDLE} className="mouth mouth-idle" />
-        <Layer runs={MOUTH_A} className="mouth mouth-a" />
-        <Layer runs={MOUTH_B} className="mouth mouth-b" />
-        <Layer runs={CLOUD} className="cloud" />
-        <Layer runs={RAIN_A} className="rain rain-a" />
-        <Layer runs={RAIN_B} className="rain rain-b" />
-      </svg>
-    </div>
+    <g className={`keeper${talking ? ' is-talking' : ''}`}>
+      {/* Shadow on the floor */}
+      <ellipse className="wash" cx={590} cy={449} rx={78} ry={9} />
+
+      <g transform={`rotate(-12 ${PIVOT})`}>
+        {/* Legs */}
+        <Tube d="M 545 372 L 541 405 L 542 440" />
+        <Tube d="M 575 372 L 578 405 L 578 440" />
+        <Joint x={541} y={405} />
+        <Joint x={578} y={405} />
+
+        {/* Hips */}
+        <rect className="metal-d" x={532} y={358} width={56} height={22} rx={7} strokeWidth={2.5} />
+
+        <g className="keeper-upper">
+          {/* Torso */}
+          <rect className="metal" x={514} y={250} width={92} height={112} rx={13} strokeWidth={3} />
+          <g clipPath="url(#torso-clip)">
+            <rect className="wash" x={578} y={240} width={40} height={130} />
+            <rect className="hatched" x={592} y={240} width={20} height={130} />
+          </g>
+          <path className="hl" d="M 522 270 Q 523 258 534 256" strokeWidth={3} />
+          {[[524, 260], [596, 260], [524, 352], [596, 352]].map(([x, y]) => (
+            <circle key={`${x}-${y}`} className="ink-fill" cx={x} cy={y} r={2.2} />
+          ))}
+
+          {/* Pressure gauge */}
+          <circle className="screen" cx={560} cy={293} r={21} strokeWidth={2.5} />
+          {[200, 225, 250, 270, 290, 315, 340].map((deg) => {
+            const a = (deg * Math.PI) / 180
+            return (
+              <line
+                key={deg}
+                x1={560 + 14 * Math.cos(a)}
+                y1={293 + 14 * Math.sin(a)}
+                x2={560 + 18 * Math.cos(a)}
+                y2={293 + 18 * Math.sin(a)}
+                strokeWidth={1.5}
+              />
+            )
+          })}
+          <line className="needle" x1={560} y1={293} x2={549} y2={282} strokeWidth={2.2} />
+          <circle className="ink-fill" cx={560} cy={293} r={3} />
+
+          {/* Little access panel */}
+          <rect className="metal-d" x={538} y={325} width={44} height={18} rx={3} strokeWidth={2} />
+          <line x1={545} y1={331} x2={575} y2={331} strokeWidth={1.4} />
+          <line x1={545} y1={337} x2={568} y2={337} strokeWidth={1.4} />
+
+          {/* Long arms, hanging limp */}
+          <Tube d="M 511 268 L 502 330 L 505 390" w={9} />
+          <Tube d="M 609 268 L 618 330 L 615 390" w={9} />
+          <Joint x={502} y={330} r={6} />
+          <Joint x={618} y={330} r={6} />
+          <path className="metal" d="M 497 392 L 513 392 Q 517 408 511 418 Q 504 422 498 416 Q 493 405 497 392 Z" strokeWidth={2.2} />
+          <path d="M 505 404 L 505 417" strokeWidth={1.6} />
+          <path className="metal" d="M 607 392 L 623 392 Q 626 405 621 416 Q 614 421 608 416 Q 604 405 607 392 Z" strokeWidth={2.2} />
+          <path d="M 615 404 L 615 417" strokeWidth={1.6} />
+          <Joint x={511} y={266} r={10} />
+          <Joint x={609} y={266} r={10} />
+
+          {/* Neck */}
+          <rect className="metal-d" x={546} y={233} width={28} height={19} rx={3} strokeWidth={2.2} />
+          <line x1={548} y1={239} x2={572} y2={239} strokeWidth={1.4} />
+          <line x1={548} y1={245} x2={572} y2={245} strokeWidth={1.4} />
+
+          <g className="keeper-head">
+            {/* Antenna */}
+            <path d="M 562 118 Q 563 104 568 92" strokeWidth={2.5} />
+            <circle className="antenna-glow" cx={569} cy={86} r={12} />
+            <circle className="metal" cx={569} cy={86} r={6.5} strokeWidth={2.2} />
+
+            {/* Boxy CRT head: back shell for depth, then the front */}
+            <rect className="metal-d" x={512} y={118} width={134} height={108} rx={20} strokeWidth={3} />
+            {[150, 162, 174, 186, 198].map((y) => (
+              <line key={y} x1={630} y1={y} x2={640} y2={y - 3} strokeWidth={2} />
+            ))}
+            <rect className="metal" x={494} y={128} width={132} height={108} rx={20} strokeWidth={3} />
+            <path className="hl" d="M 503 170 Q 502 140 530 136" strokeWidth={3.5} />
+            <path className="hl" d="M 540 134 L 556 134" strokeWidth={3} />
+
+            {/* Screen */}
+            <rect className="screen" x={510} y={144} width={94} height={77} rx={14} strokeWidth={3} />
+            <path className="wash-stroke" d="M 516 212 Q 515 152 532 149" strokeWidth={4} />
+            <path className="hl" d="M 588 150 Q 597 152 598 162" strokeWidth={2.5} />
+
+            {/* Face: sad brows, heavy-lidded eyes, tired bags */}
+            <path d="M 528 167 Q 537 164 546 160" strokeWidth={2.4} />
+            <path d="M 568 160 Q 577 164 586 167" strokeWidth={2.4} />
+            <g className="eyes">
+              <ellipse className="ink-fill" cx={538} cy={182} rx={7} ry={9} />
+              <ellipse className="ink-fill" cx={576} cy={182} rx={7} ry={9} />
+              <path className="screen-fill" d="M 528 170 L 549 170 L 549 177 Q 539 175 528 180 Z" />
+              <path className="screen-fill" d="M 565 170 L 586 170 L 586 180 Q 575 175 565 177 Z" />
+              <path d="M 528 180 Q 539 175 549 177" strokeWidth={2.4} />
+              <path d="M 565 177 Q 575 175 586 180" strokeWidth={2.4} />
+              <circle className="hl-fill" cx={535} cy={184} r={2} />
+              <circle className="hl-fill" cx={573} cy={184} r={2} />
+            </g>
+            <path className="soft" d="M 531 196 Q 538 199 545 196" strokeWidth={1.8} />
+            <path className="soft" d="M 569 196 Q 576 199 583 196" strokeWidth={1.8} />
+
+            <path className="mouth mouth-idle" d="M 548 207 Q 557 202 566 207" strokeWidth={2.4} />
+            <ellipse className="mouth mouth-a ink-fill" cx={557} cy={206} rx={6} ry={4.5} />
+            <ellipse className="mouth mouth-b ink-fill" cx={557} cy={206} rx={4} ry={2.2} />
+          </g>
+        </g>
+      </g>
+
+      {/* Boots, flat on the floor */}
+      <path className="metal" d="M 520 446 L 521 437 Q 523 426 539 426 Q 557 426 561 437 L 563 446 Z" strokeWidth={2.6} />
+      <path className="metal" d="M 560 446 L 561 432 Q 564 420 581 420 Q 601 421 604 434 L 606 446 Z" strokeWidth={2.6} />
+      <line x1={521} y1={440} x2={562} y2={440} strokeWidth={1.8} />
+      <line x1={561} y1={440} x2={605} y2={440} strokeWidth={1.8} />
+      <path className="hl" d="M 527 434 Q 529 429 537 429" strokeWidth={2.2} />
+      <path className="hl" d="M 567 428 Q 570 423 579 423" strokeWidth={2.2} />
+
+      {/* A small personal rain cloud, out while it talks */}
+      <g className="cloud">
+        <path
+          className="cloud-body"
+          d="M 470 58 Q 466 40 484 38 Q 490 22 510 28 Q 524 16 538 30 Q 556 30 554 48 Q 560 62 544 64 L 478 64 Q 466 64 470 58 Z"
+          strokeWidth={2.4}
+        />
+        <path className="wash" d="M 474 60 Q 500 52 552 56 Q 552 63 544 64 L 478 64 Q 470 64 474 60 Z" />
+        <g className="rain">
+          <line x1={485} y1={72} x2={481} y2={86} strokeWidth={2} />
+          <line x1={505} y1={72} x2={501} y2={86} strokeWidth={2} />
+          <line x1={525} y1={72} x2={521} y2={86} strokeWidth={2} />
+          <line x1={545} y1={72} x2={541} y2={86} strokeWidth={2} />
+        </g>
+      </g>
+    </g>
+  )
+}
+
+/** Clip paths the keeper needs; rendered once inside the scene's <defs>. */
+export function KeeperDefs() {
+  return (
+    <clipPath id="torso-clip">
+      <rect x={514} y={250} width={92} height={112} rx={13} />
+    </clipPath>
   )
 }

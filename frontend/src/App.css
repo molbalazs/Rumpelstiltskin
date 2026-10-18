@@ -1,21 +1,7 @@
-/* Hard one-pixel frame with notched corners, drawn outside the box. */
-
-.scene,
-.dialogue,
-.input-area {
-  --frame: var(--ink);
-  box-shadow:
-    0 calc(var(--u) * -1) 0 0 var(--frame),
-    0 var(--u) 0 0 var(--frame),
-    calc(var(--u) * -1) 0 0 0 var(--frame),
-    var(--u) 0 0 0 var(--frame),
-    calc(var(--u) * 2) calc(var(--u) * 2) 0 0 var(--frame);
-}
-
 .app {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
 }
 
 /* ---------- Header ---------- */
@@ -25,142 +11,128 @@
 }
 
 .app-header h1 {
-  font-family: var(--font-pixel);
-  font-size: clamp(22px, 6vw, 40px);
-  font-weight: 400;
-  line-height: 1.1;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-family: var(--font-title);
+  font-size: clamp(34px, 8vw, 56px);
+  font-weight: 700;
+  line-height: 1;
   color: var(--ink);
-  text-shadow: var(--u) var(--u) 0 var(--grey);
 }
 
 .app-header .subtitle {
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: 22px;
-  color: var(--grey);
+  color: var(--soft);
 }
 
 .chat-area {
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 26px;
 }
 
 /* ---------- Scene ---------- */
 
 .scene {
-  position: relative;
-  height: calc(var(--u) * 112);
   overflow: hidden;
   background: var(--paper);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--sketch-radius);
+  box-shadow: 4px 5px 0 var(--wash-strong);
 }
 
-/* Wall: a 1-bit gradient, dense at the top and fading out */
-.scene::before,
-.scene::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  background: var(--ink);
-}
-
-.scene::before {
-  top: 0;
-  height: calc(var(--u) * 10);
-  -webkit-mask: var(--dither-25) 0 0 / calc(var(--u) * 2) repeat;
-  mask: var(--dither-25) 0 0 / calc(var(--u) * 2) repeat;
-}
-
-.scene::after {
-  top: calc(var(--u) * 10);
-  height: calc(var(--u) * 10);
-  -webkit-mask: var(--dither-12) 0 0 / calc(var(--u) * 4) repeat;
-  mask: var(--dither-12) 0 0 / calc(var(--u) * 4) repeat;
-}
-
-.scene-sign {
-  position: absolute;
-  z-index: 1;
-  top: calc(var(--u) * 24);
-  left: calc(var(--u) * 8);
-  padding: calc(var(--u) * 2) calc(var(--u) * 3);
-  font-family: var(--font-pixel);
-  font-size: 12px;
-  line-height: 1.4;
-  text-transform: uppercase;
-  color: var(--ink);
-  background: var(--paper);
-  border: var(--u) solid var(--ink);
-  box-shadow: var(--u) var(--u) 0 0 var(--ink);
-}
-
-.scene-keeper {
-  position: absolute;
-  z-index: 1;
-  left: 50%;
-  bottom: calc(var(--u) * 8);
-  transform: translateX(-50%);
-}
-
-/* Counter in front of the keeper: hard top edge, dithered front */
-.scene-counter {
-  position: absolute;
-  z-index: 2;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: calc(var(--u) * 10);
-  background: var(--paper);
-  border-top: var(--u) solid var(--ink);
-}
-
-.scene-counter::before {
-  content: '';
-  position: absolute;
-  inset: calc(var(--u) * 2) 0 0;
-  background: var(--ink);
-  -webkit-mask: var(--dither-50) 0 0 / calc(var(--u) * 2) repeat;
-  mask: var(--dither-50) 0 0 / calc(var(--u) * 2) repeat;
-}
-
-/* ---------- Keeper ---------- */
-
-.keeper-sprite {
+.scene-art {
   display: block;
-  width: calc(var(--u) * 88);
-  height: calc(var(--u) * 100);
-  overflow: visible;
-  animation: sigh 3.2s steps(1) infinite;
+  width: 100%;
+  height: auto;
 }
 
-.keeper .k { fill: var(--ink); }
-.keeper .p { fill: var(--paper); }
-.keeper .g { fill: var(--grey); }
+/* Linework defaults, inherited so per-element attributes can override */
+.scene-art .art {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* The lines wobble like ink, and "boil" between three wobbles */
+  filter: url(#sketch-0);
+  animation: boil 0.75s steps(1) infinite;
+}
 
-/* Slow, heavy blink: the lids sink from the top */
-.keeper .lenses {
+.scene-art .metal { fill: var(--metal); }
+.scene-art .metal-d { fill: var(--metal-d); }
+.scene-art .screen { fill: var(--screen); }
+.scene-art .screen-fill { fill: var(--screen); stroke: none; }
+.scene-art .ink-fill { fill: var(--ink); stroke: none; }
+.scene-art .hl { stroke: var(--hl); }
+.scene-art .hl-fill { fill: var(--hl); stroke: none; }
+.scene-art .wash { fill: var(--wash); stroke: none; }
+.scene-art .wash-stroke { stroke: var(--wash); }
+.scene-art .soft { stroke: var(--soft); }
+.scene-art .hatched { fill: url(#hatch); stroke: none; }
+.scene-art .hatch-line { stroke: var(--ink); stroke-width: 1.2; opacity: 0.45; }
+
+/* Limbs and wheel spokes: outlined metal tubes, ribbed with dashes */
+.scene-art .tube-out { fill: none; stroke: var(--ink); stroke-width: 14; }
+.scene-art .tube-in { fill: none; stroke: var(--metal); stroke-width: 9; }
+.scene-art .ribs { fill: none; stroke: var(--soft); stroke-dasharray: 1.5 4.5; stroke-linecap: butt; }
+
+.scene-art .note { fill: var(--screen); }
+.scene-art .tape { fill: var(--hl); opacity: 0.55; stroke: none; }
+.scene-art .note-text {
+  fill: var(--ink);
+  stroke: none;
+  font-family: var(--font-hand);
+  font-size: 20px;
+  text-anchor: middle;
+}
+
+/* ---------- Keeper animation ---------- */
+
+/* Transform origins are in scene units, in the keeper's upright frame. */
+
+.keeper-upper {
+  transform-origin: 560px 360px;
+  animation: sigh 4.5s ease-in-out infinite;
+}
+
+.keeper-head {
+  transform-origin: 560px 240px;
+  animation: droop 4.5s ease-in-out infinite;
+}
+
+.keeper .eyes {
   transform-box: fill-box;
-  transform-origin: bottom;
-  animation: slow-blink 6s steps(1) infinite;
+  transform-origin: center;
+  animation: blink 5.5s ease-in-out infinite;
 }
 
-/* Now and then it looks up at you, briefly */
-.keeper .pupils {
-  animation: look-up 9s steps(1) infinite;
+.keeper .needle {
+  transform-origin: 560px 293px;
+  animation: twitch 3.4s ease-out infinite;
+}
+
+.keeper .antenna-glow {
+  fill: var(--hl);
+  stroke: none;
+  animation: glow 2.6s ease-in-out infinite;
 }
 
 .keeper .mouth-a,
 .keeper .mouth-b,
-.keeper .cloud,
-.keeper .rain {
+.keeper .cloud {
   opacity: 0;
 }
 
-/* While talking: a slow nod, mumbling mouth and a small rain cloud */
-.keeper.is-talking .keeper-sprite {
-  animation-duration: 0.8s;
+.keeper .cloud-body { fill: var(--metal); }
+
+.keeper .rain line {
+  stroke-dasharray: 5 9;
+  animation: rain 0.5s linear infinite;
+}
+
+/* While talking: a nod, a mumbling mouth and a small rain cloud */
+.keeper.is-talking .keeper-head {
+  animation: nod 0.7s ease-in-out infinite;
 }
 
 .keeper.is-talking .mouth-idle {
@@ -175,43 +147,35 @@
   animation: frame-b 0.26s steps(1) infinite;
 }
 
-.keeper.is-talking .pupils {
-  animation: none;
-  transform: translateY(-1px);
-}
-
 .keeper.is-talking .cloud {
   opacity: 1;
-}
-
-.keeper.is-talking .rain-a {
-  animation: frame-a 0.36s steps(1) infinite;
-}
-
-.keeper.is-talking .rain-b {
-  animation: frame-b 0.36s steps(1) infinite;
+  animation: float 2s ease-in-out infinite;
 }
 
 /* ---------- Dialogue box ---------- */
 
 .dialogue {
   position: relative;
-  min-height: calc(3 * 1.15em + 48px);
-  padding: 24px 26px 22px;
+  min-height: calc(3 * 1.25em + 44px);
+  padding: 24px 26px 20px;
   background: var(--paper);
   color: var(--ink);
-  font-size: 28px;
-  line-height: 1.15;
+  font-size: 26px;
+  line-height: 1.25;
   cursor: pointer;
   user-select: none;
+  border: 2.5px solid var(--ink);
+  border-radius: var(--sketch-radius);
+  box-shadow: 4px 5px 0 var(--wash-strong);
 }
 
-/* Thin inner rule, like a printed card */
+/* A second, looser pencil line inside, like a sketched double border */
 .dialogue::before {
   content: '';
   position: absolute;
-  inset: calc(var(--u) * 1.5);
-  border: 2px solid var(--ink);
+  inset: 5px 4px 4px 6px;
+  border: 1.5px solid var(--soft);
+  border-radius: 12px 5px 10px 4px / 4px 10px 5px 12px;
   pointer-events: none;
 }
 
@@ -227,30 +191,34 @@
 .dialogue-name {
   position: absolute;
   z-index: 1;
-  top: calc(var(--u) * -4);
-  left: 20px;
-  padding: 2px 10px 4px;
-  font-family: var(--font-pixel);
-  font-size: 14px;
-  text-transform: uppercase;
+  top: -17px;
+  left: 18px;
+  padding: 1px 12px 3px;
+  font-family: var(--font-title);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: var(--paper);
   background: var(--ink);
+  border-radius: 10px 4px 12px 3px / 4px 12px 3px 10px;
+  transform: rotate(-2deg);
 }
 
 .dialogue--player .dialogue-name {
   color: var(--ink);
-  background: var(--paper);
-  box-shadow: inset 0 0 0 2px var(--ink);
+  background: var(--screen);
+  border: 2px solid var(--ink);
+  transform: rotate(1.5deg);
 }
 
 .dialogue-cursor {
   position: absolute;
   right: 22px;
-  bottom: 18px;
-  width: 21px;
-  height: 12px;
+  bottom: 16px;
+  width: 20px;
+  height: 14px;
   fill: var(--ink);
-  animation: cursor-bounce 0.8s steps(1) infinite;
+  animation: cursor-bounce 0.9s ease-in-out infinite;
 }
 
 /* ---------- Input ---------- */
@@ -260,12 +228,16 @@
   gap: 12px;
   align-items: stretch;
   padding: 12px;
-  background: var(--ink);
+  background: var(--screen);
+  border: 2.5px solid var(--ink);
+  border-radius: 12px 5px 14px 6px / 6px 14px 5px 12px;
+  box-shadow: 4px 5px 0 var(--wash-strong);
 }
 
 .input-area:focus-within {
-  outline: 2px dashed var(--paper);
-  outline-offset: -6px;
+  box-shadow:
+    4px 5px 0 var(--wash-strong),
+    0 0 0 4px var(--wash);
 }
 
 .message-input {
@@ -275,76 +247,108 @@
   border: none;
   outline: none;
   resize: none;
-  color: var(--paper);
-  caret-color: var(--paper);
-  font-family: var(--font-text);
+  color: var(--ink);
+  caret-color: var(--ink);
+  font-family: var(--font-hand);
   font-size: 24px;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .message-input::placeholder {
-  color: var(--grey);
+  color: var(--soft);
 }
 
 .send-button {
-  padding: 0 16px;
-  background: var(--paper);
-  color: var(--ink);
-  border: none;
-  font-family: var(--font-pixel);
-  font-size: 14px;
-  text-transform: uppercase;
+  align-self: center;
+  padding: 8px 18px 10px;
+  background: var(--ink);
+  color: var(--paper);
+  border: 2.5px solid var(--ink);
+  border-radius: 14px 5px 12px 6px / 6px 12px 5px 14px;
+  font-family: var(--font-title);
+  font-size: 22px;
+  font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
+  transform: rotate(-1.5deg);
+  transition: transform 0.15s ease;
 }
 
 .send-button:not(:disabled):hover,
 .send-button:focus-visible {
   outline: none;
-  color: var(--paper);
-  background: var(--ink);
-  box-shadow: inset 0 0 0 2px var(--paper);
+  transform: rotate(1deg) translateY(-2px);
+}
+
+.send-button:focus-visible {
+  box-shadow: 0 0 0 4px var(--wash-strong);
 }
 
 .send-button:not(:disabled):active {
-  transform: translateY(2px);
+  transform: rotate(0) translateY(1px);
 }
 
 .send-button:disabled {
-  color: var(--grey);
+  color: var(--soft);
   background: transparent;
-  box-shadow: inset 0 0 0 2px var(--grey);
+  border: 2.5px dashed var(--soft);
   cursor: not-allowed;
 }
 
 .hint {
-  margin-top: -6px;
+  margin-top: -4px;
   text-align: center;
   font-size: 18px;
-  color: var(--grey);
+  color: var(--soft);
 }
 
-/* ---------- Keyframes (stepped, so motion snaps to the pixel grid) ---------- */
+/* ---------- Keyframes ---------- */
 
-/* Transforms on SVG children are in sprite pixels: 1px = one art pixel. */
+@keyframes boil {
+  0% { filter: url(#sketch-0); }
+  33% { filter: url(#sketch-1); }
+  66% { filter: url(#sketch-2); }
+}
 
 @keyframes sigh {
-  0% { transform: translateY(0); }
-  60% { transform: translateY(var(--u)); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
 }
 
-@keyframes slow-blink {
-  0% { transform: scaleY(1); }
-  86% { transform: scaleY(0.6); }
-  88% { transform: scaleY(0.2); }
-  92% { transform: scaleY(0.6); }
-  94% { transform: scaleY(1); }
+@keyframes droop {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(-2.5deg); }
 }
 
-@keyframes look-up {
-  0% { transform: translateY(0); }
-  62% { transform: translateY(-2px); }
-  78% { transform: translateY(0); }
+@keyframes nod {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(2.5deg); }
+}
+
+@keyframes blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  94% { transform: scaleY(0.08); }
+}
+
+@keyframes twitch {
+  0%, 68%, 100% { transform: rotate(0); }
+  72% { transform: rotate(22deg); }
+  76% { transform: rotate(8deg); }
+  80% { transform: rotate(16deg); }
+}
+
+@keyframes glow {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.9; }
+}
+
+@keyframes rain {
+  to { stroke-dashoffset: -14; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
 @keyframes frame-a {
@@ -358,20 +362,16 @@
 }
 
 @keyframes cursor-bounce {
-  0% { transform: translateY(0); }
+  0%, 100% { transform: translateY(0); }
   50% { transform: translateY(4px); }
 }
 
 /* ---------- Phone widths ---------- */
 
 @media (max-width: 560px) {
-  .scene-sign {
-    display: none;
-  }
-
   .dialogue {
-    font-size: 23px;
-    padding: 20px 18px 18px;
+    font-size: 22px;
+    padding: 22px 18px 18px;
   }
 
   .message-input {
@@ -379,8 +379,8 @@
   }
 
   .send-button {
-    padding: 0 10px;
-    font-size: 12px;
+    padding: 6px 12px 8px;
+    font-size: 19px;
   }
 
   .hint {
