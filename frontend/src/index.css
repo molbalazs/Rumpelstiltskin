@@ -4,18 +4,82 @@
   padding: 0;
 }
 
+:root {
+  /* Ink and grey washes on kraft paper */
+  --kraft: #c4ae87;
+  --paper: #d8c6a2;
+  --ink: #2b2620;
+  --soft: rgb(43 38 32 / 0.45);
+  --wash: rgb(43 38 32 / 0.16);
+  --wash-strong: rgb(43 38 32 / 0.3);
+  --metal: #e4d8bf;
+  --metal-d: #b8a684;
+  --screen: #f4eddd;
+  --hl: #fdf9f0;
+
+  /* Irregular corners make boxes look hand-drawn */
+  --sketch-radius: 6px 14px 5px 12px / 12px 5px 14px 6px;
+
+  --font-title: 'Cabin Sketch', 'Comic Sans MS', cursive;
+  --font-hand: 'Patrick Hand', 'Comic Sans MS', cursive;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kraft: #1d1a16;
+    --paper: #29251f;
+    --ink: #ece3d1;
+    --soft: rgb(236 227 209 / 0.42);
+    --wash: rgb(0 0 0 / 0.3);
+    --wash-strong: rgb(0 0 0 / 0.45);
+    --metal: #3d362c;
+    --metal-d: #2f2a22;
+    --screen: #514839;
+    --hl: rgb(255 248 232 / 0.75);
+  }
+}
+
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #0f0f0f;
-  color: #f0f0f0;
+  font-family: var(--font-hand);
+  background: var(--kraft);
+  color: var(--ink);
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* Paper fibre texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.15 0 0 0 0 0.1 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 #root {
   width: 100%;
-  max-width: 680px;
-  padding: 2rem;
+  max-width: 760px;
+  padding: 24px 16px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
