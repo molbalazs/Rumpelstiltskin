@@ -1,4 +1,3 @@
-@wip
 Feature: The secret stays on the server
   The frontend never receives the secret until the player has won. Steps
   capture every API response the browser receives, read the real secret
@@ -17,4 +16,5 @@ Feature: The secret stays on the server
 
   Scenario: The masked context gives nothing away
     When the player opens the app
-    Then the context panel doesn't contain any 3-letter part of the session's secret
+    Then the context panel shows the mask where the secret goes, and nothing else changed
+    And the context panel doesn't contain the session's secret

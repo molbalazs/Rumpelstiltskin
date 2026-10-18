@@ -1,4 +1,3 @@
-@wip
 Feature: Starting a game
   When a player opens the app, a new game session starts on the server. The
   session gets a pre-defined context, chosen by difficulty and theme, and a

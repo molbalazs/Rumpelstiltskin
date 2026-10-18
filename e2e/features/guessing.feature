@@ -1,4 +1,3 @@
-@wip
 Feature: Guessing the secret
   Apart from chatting, the player has a separate box for submitting the
   solution. The server compares the guess with the session's secret. A

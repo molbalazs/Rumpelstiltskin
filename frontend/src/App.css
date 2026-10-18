@@ -76,16 +76,6 @@
 .scene-art .tube-in { fill: none; stroke: var(--metal); stroke-width: 9; }
 .scene-art .ribs { fill: none; stroke: var(--soft); stroke-dasharray: 1.5 4.5; stroke-linecap: butt; }
 
-.scene-art .note { fill: var(--screen); }
-.scene-art .tape { fill: var(--hl); opacity: 0.55; stroke: none; }
-.scene-art .note-text {
-  fill: var(--ink);
-  stroke: none;
-  font-family: var(--font-hand);
-  font-size: 20px;
-  text-anchor: middle;
-}
-
 /* ---------- Keeper animation ---------- */
 
 /* Transform origins are in scene units, in the keeper's upright frame. */
@@ -302,6 +292,148 @@
   color: var(--soft);
 }
 
+/* ---------- Stage: scene with the keeper's orders pinned beside it ---------- */
+
+.stage {
+  position: relative;
+}
+
+.context-card {
+  position: absolute;
+  z-index: 1;
+  top: 5%;
+  right: 2.5%;
+  /* Clear of the keeper's head, which reaches about 72% across the scene */
+  width: min(24%, 210px);
+  padding: 12px 14px 14px;
+  background: var(--screen);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 4px 10px 3px 8px / 8px 3px 10px 4px;
+  box-shadow: 3px 4px 0 var(--wash-strong);
+  transform: rotate(2.5deg);
+}
+
+/* A strip of tape holding it up */
+.context-card::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 56px;
+  height: 18px;
+  background: var(--hl);
+  opacity: 0.6;
+  transform: translateX(-50%) rotate(-4deg);
+}
+
+.context-label {
+  font-family: var(--font-title);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.context-meta {
+  font-size: 16px;
+  color: var(--soft);
+}
+
+.context-text {
+  margin-top: 6px;
+  font-size: 18px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Guessing and winning ---------- */
+
+.guess-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: -6px;
+}
+
+.guess-label {
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.guess-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 12px;
+  background: var(--screen);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: 10px 4px 12px 5px / 5px 12px 4px 10px;
+  font-family: var(--font-hand);
+  font-size: 22px;
+  outline: none;
+}
+
+.guess-input:focus {
+  box-shadow: 0 0 0 4px var(--wash);
+}
+
+.guess-input::placeholder {
+  color: var(--soft);
+}
+
+.guess-input:disabled {
+  opacity: 0.6;
+}
+
+.guess-button,
+.new-game-button {
+  padding: 6px 16px 8px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: 14px 5px 12px 6px / 6px 12px 5px 14px;
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transform: rotate(1deg);
+}
+
+.guess-button:not(:disabled):hover,
+.new-game-button:hover {
+  transform: rotate(-1deg) translateY(-2px);
+}
+
+.guess-button:disabled {
+  color: var(--soft);
+  border-style: dashed;
+  border-color: var(--soft);
+  cursor: not-allowed;
+}
+
+.win-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  background: var(--screen);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--sketch-radius);
+  box-shadow: 4px 5px 0 var(--wash-strong);
+  font-size: 24px;
+}
+
+.win-banner strong {
+  font-family: var(--font-title);
+  font-size: 28px;
+}
+
+.message-input:disabled {
+  cursor: not-allowed;
+}
+
 /* ---------- Keyframes ---------- */
 
 @keyframes boil {
@@ -366,9 +498,35 @@
   50% { transform: translateY(4px); }
 }
 
+/* ---------- Narrow widths ---------- */
+
+/* Too narrow to pin the orders beside the keeper: they drop below the scene */
+@media (max-width: 700px) {
+  .context-card {
+    position: static;
+    width: auto;
+    margin: 18px 6px 0;
+    transform: rotate(-1deg);
+  }
+}
+
 /* ---------- Phone widths ---------- */
 
 @media (max-width: 560px) {
+  .guess-label {
+    font-size: 17px;
+  }
+
+  .guess-input {
+    font-size: 19px;
+  }
+
+  .win-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 21px;
+  }
+
   .dialogue {
     font-size: 22px;
     padding: 22px 18px 18px;
