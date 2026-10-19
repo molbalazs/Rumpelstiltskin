@@ -13,10 +13,10 @@ jobs:
     name: Plan Infrastructure Changes
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
           cache: 'npm'
@@ -25,7 +25,7 @@ jobs:
             infra/package-lock.json
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: arn:aws:iam::231561175341:role/GitHubActionsDeployRole
           aws-region: eu-west-1
@@ -44,8 +44,6 @@ jobs:
       - name: CDK diff (show changes)
         run: |
           cd infra
-          npx cdk acknowledge 34892 2>/dev/null || true
-          npx cdk acknowledge 32775 2>/dev/null || true
           npx cdk diff
 
   deploy:
@@ -56,10 +54,10 @@ jobs:
       name: production
       url: https://d3mljvfc86c0ww.cloudfront.net
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: '22'
           cache: 'npm'
@@ -68,7 +66,7 @@ jobs:
             infra/package-lock.json
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
         with:
           role-to-assume: arn:aws:iam::231561175341:role/GitHubActionsDeployRole
           aws-region: eu-west-1

@@ -33,7 +33,7 @@ export default defineConfig({
     baseUrl: process.env.APP_URL ?? 'http://localhost:5173',
     specPattern: 'features/**/*.feature',
     supportFile: false,
-    env: {
+    expose: {
       API_URL: (process.env.API_URL ?? 'http://localhost:3000').replace(/\/$/, ''),
       GLOBAL_DAILY_CAP: Number(process.env.GLOBAL_DAILY_CAP ?? 5),
       // Requirements not built yet are tagged @wip and skipped by default.

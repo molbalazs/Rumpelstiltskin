@@ -44,7 +44,8 @@ export class ApiStack extends cdk.Stack {
           image: lambda.Runtime.PYTHON_3_12.bundlingImage,
           command: [
             'bash', '-c',
-            'pip install -r /asset-input/requirements.txt -t /asset-output --quiet && cp -r /asset-input/handler.py /asset-input/rate_limiter.py /asset-input/game /asset-output/',
+            // No pip cache (the bundling user can't write one) and no "new pip available" notice
+            'pip install --no-cache-dir --disable-pip-version-check -r /asset-input/requirements.txt -t /asset-output --quiet && cp -r /asset-input/handler.py /asset-input/rate_limiter.py /asset-input/game /asset-output/',
           ],
         },
       }),
