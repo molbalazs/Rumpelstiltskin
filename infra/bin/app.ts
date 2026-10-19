@@ -4,6 +4,7 @@ import * as cdk from 'aws-cdk-lib'
 import { StorageStack } from '../lib/storage-stack'
 import { ApiStack } from '../lib/api-stack'
 import { FrontendStack } from '../lib/frontend-stack'
+import { MonitoringStack } from '../lib/monitoring-stack'
 
 const app = new cdk.App()
 
@@ -26,3 +27,9 @@ const frontend = new FrontendStack(app, 'RumpelstiltskinFrontend', {
   apiUrlExportName: api.apiUrlExportName,
 })
 frontend.addDependency(api)
+
+new MonitoringStack(app, 'RumpelstiltskinMonitoring', {
+  env,
+  alertEmail: 'molbalazs@gmail.com',
+  monthlyBudgetUsd: 10,
+})

@@ -18,6 +18,9 @@ os.environ.setdefault("AWS_ACCESS_KEY_ID", "test")
 os.environ.setdefault("AWS_SECRET_ACCESS_KEY", "test")
 os.environ.setdefault("LLM_PROVIDER", "mock")
 os.environ.setdefault("LLM_CALL_LOG_TABLE", "rumpelstiltskin-llm-calls")
+# Everything local shares one IP, so keep the per-IP limits out of the way
+os.environ.setdefault("IP_GAMES_PER_HOUR", "100000")
+os.environ.setdefault("IP_MESSAGES_PER_DAY", "100000")
 
 import boto3  # noqa: E402  (env must be set first)
 
@@ -78,7 +81,7 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length") or 0)
         event = {
             "rawPath": self.path.split("?")[0],
-            "requestContext": {"http": {"method": method}},
+            "requestContext": {"http": {"method": method, "sourceIp": self.client_address[0]}},
             "body": self.rfile.read(length).decode() if length else None,
         }
         response = lambda_handler(event, None)
