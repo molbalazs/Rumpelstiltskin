@@ -1,4 +1,3 @@
-@wip
 Feature: Daily message limit
   Every chat message costs one LLM call. Before calling the LLM, the Lambda
   takes one from the global daily counter in DynamoDB. Once today's count
@@ -18,10 +17,10 @@ Feature: Daily message limit
     Then the keeper says the daily limit has been reached
     And the message box is disabled
     And no LLM call is recorded for "Second"
-    And today's message count is 5
+    And today's message count is now 5
 
   Scenario: Starting a game and guessing don't use up the limit
     Given today's message count is 2
     When the player starts another game
     And the player submits the solution "wrongword"
-    Then today's message count is 2
+    Then today's message count is now 2

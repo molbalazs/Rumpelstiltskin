@@ -52,14 +52,6 @@ export function Scene({ keeperTalking }: SceneProps) {
 
           <Vault />
 
-          {/* A note taped to the wall */}
-          <g transform="translate(732 196) rotate(6)">
-            <rect className="note" x={-50} y={-34} width={100} height={68} strokeWidth={1.6} />
-            <rect className="tape" x={-18} y={-42} width={36} height={14} transform="rotate(-4)" />
-            <text className="note-text" x={0} y={-4}>The answer</text>
-            <text className="note-text" x={0} y={20}>is no.</text>
-          </g>
-
           {/* A couple of loose nuts on the floor */}
           <g transform="translate(660 462) rotate(-15)">
             <rect className="metal" x={-7} y={-5} width={14} height={10} rx={2} strokeWidth={2} />

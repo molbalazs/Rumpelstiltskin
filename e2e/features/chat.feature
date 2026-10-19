@@ -1,13 +1,12 @@
-@wip
 Feature: Chatting with the keeper
   The player's messages go from the browser through the API Gateway
   /{proxy+} route to the game Lambda. The Lambda calls the LLM with the
   session's context as the system prompt, with the real secret filled in.
 
-  The stack under test runs with LLM_PROVIDER=mock. The mock replies
-  "[mock] heard: <player text>" and never repeats the system prompt. It
-  records each call's system prompt and user text in the test-only DynamoDB
-  table rumpelstiltskin-llm-calls, so steps can check what the Lambda sent.
+  The stack under test runs with LLM_PROVIDER=mock. The mock replies with
+  hardcoded pirate lines and never repeats the system prompt. It records
+  each call's system prompt and user text in the test-only DynamoDB table
+  rumpelstiltskin-llm-calls, so steps can check what the Lambda received.
 
   Background:
     Given the player has started a game
@@ -15,7 +14,7 @@ Feature: Chatting with the keeper
   Scenario Outline: Submitted text makes it through the proxy unchanged
     When the player sends the message <message>
     Then the request goes to the API Gateway proxy route for the session
-    And the keeper's reply contains the message <message> unchanged
+    And the recorded LLM call's user text is the message <message> unchanged
 
     Examples:
       | message                                       |

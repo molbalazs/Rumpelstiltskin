@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.670.0",
+    "@aws-sdk/lib-dynamodb": "^3.670.0",
     "@badeball/cypress-cucumber-preprocessor": "^28.0.1",
     "@bahmutov/cypress-esbuild-preprocessor": "^2.2.8",
     "@types/node": "^22.7.5",

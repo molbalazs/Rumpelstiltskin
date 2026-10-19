@@ -14,9 +14,15 @@ const env = {
 
 const storage = new StorageStack(app, 'RumpelstiltskinStorage', { env })
 
-new ApiStack(app, 'RumpelstiltskinApi', {
+const api = new ApiStack(app, 'RumpelstiltskinApi', {
   env,
   rateLimitTable: storage.rateLimitTable,
+  sessionsTable: storage.sessionsTable,
+  llmCallsTable: storage.llmCallsTable,
 })
 
-new FrontendStack(app, 'RumpelstiltskinFrontend', { env })
+const frontend = new FrontendStack(app, 'RumpelstiltskinFrontend', {
+  env,
+  apiUrlExportName: api.apiUrlExportName,
+})
+frontend.addDependency(api)
