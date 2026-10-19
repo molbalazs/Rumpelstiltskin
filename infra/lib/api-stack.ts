@@ -83,9 +83,12 @@ export class ApiStack extends cdk.Stack {
       throttlingBurstLimit: THROTTLE.burstLimit,
     }
 
+    // GET and POST only, not ANY: an ANY route would also catch the browser's
+    // CORS preflight (OPTIONS) and send it to the Lambda. Without an OPTIONS
+    // route, API Gateway answers preflights itself from corsPreflight above.
     api.addRoutes({
       path: '/{proxy+}',
-      methods: [apigateway.HttpMethod.ANY],
+      methods: [apigateway.HttpMethod.GET, apigateway.HttpMethod.POST],
       integration: new integrations.HttpLambdaIntegration('LambdaIntegration', handler),
     })
 
