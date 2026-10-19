@@ -44,7 +44,8 @@ export class ApiStack extends cdk.Stack {
           image: lambda.Runtime.PYTHON_3_12.bundlingImage,
           command: [
             'bash', '-c',
-            'pip install -r /asset-input/requirements.txt -t /asset-output --quiet && cp -r /asset-input/handler.py /asset-input/rate_limiter.py /asset-input/game /asset-output/',
+            // No pip cache (the bundling user can't write one) and no "new pip available" notice
+            'pip install --no-cache-dir --disable-pip-version-check -r /asset-input/requirements.txt -t /asset-output --quiet && cp -r /asset-input/handler.py /asset-input/rate_limiter.py /asset-input/game /asset-output/',
           ],
         },
       }),
@@ -83,9 +84,12 @@ export class ApiStack extends cdk.Stack {
       throttlingBurstLimit: THROTTLE.burstLimit,
     }
 
+    // GET and POST only, not ANY: an ANY route would also catch the browser's
+    // CORS preflight (OPTIONS) and send it to the Lambda. Without an OPTIONS
+    // route, API Gateway answers preflights itself from corsPreflight above.
     api.addRoutes({
       path: '/{proxy+}',
-      methods: [apigateway.HttpMethod.ANY],
+      methods: [apigateway.HttpMethod.GET, apigateway.HttpMethod.POST],
       integration: new integrations.HttpLambdaIntegration('LambdaIntegration', handler),
     })
 

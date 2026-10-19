@@ -5,7 +5,7 @@
   "description": "End-to-end requirements for the whole stack, written in Gherkin and run by Cypress",
   "scripts": {
     "test": "cypress run",
-    "test:wip": "cypress run --env tags=@wip",
+    "test:wip": "cypress run --expose tags=@wip",
     "open": "cypress open"
   },
   "devDependencies": {
@@ -14,7 +14,7 @@
     "@badeball/cypress-cucumber-preprocessor": "^28.0.1",
     "@bahmutov/cypress-esbuild-preprocessor": "^2.2.8",
     "@types/node": "^22.7.5",
-    "cypress": "^13.13.1",
+    "cypress": "^16.1.1",
     "esbuild": "^0.28.2",
     "typescript": "^5.5.3"
   }

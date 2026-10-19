@@ -1,4 +1,4 @@
 -r requirements.txt
 pytest==8.3.3
-moto[dynamodb]==5.0.16
+moto[dynamodb]==5.2.3
 pytest-bdd==7.3.0
