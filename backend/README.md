@@ -36,6 +36,10 @@ Point the frontend at it with `VITE_API_URL=http://localhost:3000 npm run dev`.
 | Variable           | Description                                              | Default                       |
 |--------------------|----------------------------------------------------------|-------------------------------|
 | GLOBAL_DAILY_CAP   | Max total LLM calls per day                              | 100                           |
+| MAX_MESSAGE_CHARS  | Longest message accepted                                 | 300                           |
+| MAX_GUESSES        | Guesses per game; then the game is lost                  | 3                             |
+| IP_GAMES_PER_HOUR  | New games per IP per hour                                | 10                            |
+| IP_MESSAGES_PER_DAY| Messages per IP per day, checked before the global cap   | 15                            |
 | RATE_LIMIT_TABLE   | DynamoDB table for the daily counter                     | rumpelstiltskin-rate-limits   |
 | SESSIONS_TABLE     | DynamoDB table for game sessions (holds the secrets)     | rumpelstiltskin-sessions      |
 | LLM_PROVIDER       | LLM adapter to use (only `mock` so far)                  | mock                          |

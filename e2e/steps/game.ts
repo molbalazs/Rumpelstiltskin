@@ -173,6 +173,18 @@ Then('its user text is exactly {string}', (text: string) => {
   cy.task<{ userText: string }[]>('getLlmCalls', sessionId).then(([call]) => expect(call.userText).to.equal(text))
 })
 
+When('the player types a message of {int} characters', (count: number) => {
+  cy.get('[data-testid="message-input"]').clear().type('x'.repeat(count), { delay: 0 })
+})
+
+Then('the message box holds only {int} characters', (count: number) => {
+  cy.get('[data-testid="message-input"]').invoke('val').should('have.length', count)
+})
+
+Then('the character count shows {string}', (text: string) => {
+  cy.get('[data-testid="char-count"]').should('have.text', text)
+})
+
 Then('the send button is disabled', () => {
   cy.get('[data-testid="send-button"]').should('be.disabled')
 })
@@ -266,7 +278,23 @@ Then('the secret is revealed', () => {
 
 Then("the keeper says that isn't it", () => {
   dialogueSpeaker().should('have.text', 'KEEPER')
-  dialogueText().should('have.text', "That ain't it. Arr.")
+  dialogueText().should('contain.text', "That ain't it.")
+})
+
+Then('the solution box shows {int} guesses left', (left: number) => {
+  cy.get('[data-testid="guesses-left"]').should('have.text', `${left} ${left === 1 ? 'guess' : 'guesses'} left`)
+})
+
+Then('the player loses the game', () => {
+  cy.get('[data-testid="lost-banner"]').should('be.visible')
+  cy.get('[data-testid="win-banner"]').should('not.exist')
+})
+
+Then('the secret is not revealed', () => {
+  cy.get('[data-testid="revealed-secret"]').should('not.exist')
+  secret().then((word) => {
+    cy.get('body').invoke('text').should('not.match', new RegExp(`\\b${word}\\b`, 'i'))
+  })
 })
 
 Then('the player can still send messages and guesses', () => {

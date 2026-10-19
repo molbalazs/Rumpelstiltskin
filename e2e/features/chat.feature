@@ -37,3 +37,8 @@ Feature: Chatting with the keeper
       | input |
       | ""    |
       | "   " |
+
+  Scenario: A message over 300 characters can't be sent
+    When the player types a message of 301 characters
+    Then the message box holds only 300 characters
+    And the character count shows "300/300"

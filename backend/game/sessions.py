@@ -7,12 +7,15 @@ import time
 import uuid
 
 import boto3
+from boto3.dynamodb.conditions import Attr
+from botocore.exceptions import ClientError
 
 TABLE_NAME = os.environ.get("SESSIONS_TABLE", "rumpelstiltskin-sessions")
 SESSION_TTL_SECONDS = 24 * 60 * 60
 
 ACTIVE = "active"
 WON = "won"
+LOST = "lost"
 
 
 def _table(dynamodb=None):
@@ -46,10 +49,42 @@ def get(session_id: str, dynamodb=None) -> dict | None:
     return item
 
 
-def mark_won(session_id: str, dynamodb=None) -> None:
+def use_guess(session_id: str, max_guesses: int, dynamodb=None) -> int | None:
+    """
+    Atomically count one guess on an active session.
+
+    Returns how many guesses the session has now used, or None if it has no
+    guesses left or is no longer active. Concurrent guesses can't exceed the max.
+    """
+    try:
+        result = _table(dynamodb).update_item(
+            Key={"sessionId": session_id},
+            UpdateExpression="ADD #g :one",
+            ConditionExpression=Attr("status").eq(ACTIVE)
+            & (Attr("guesses").not_exists() | Attr("guesses").lt(max_guesses)),
+            ExpressionAttributeNames={"#g": "guesses"},
+            ExpressionAttributeValues={":one": 1},
+            ReturnValues="UPDATED_NEW",
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            return None
+        raise
+    return int(result["Attributes"]["guesses"])
+
+
+def _set_status(session_id: str, status: str, dynamodb=None) -> None:
     _table(dynamodb).update_item(
         Key={"sessionId": session_id},
-        UpdateExpression="SET #s = :won",
+        UpdateExpression="SET #s = :status",
         ExpressionAttributeNames={"#s": "status"},
-        ExpressionAttributeValues={":won": WON},
+        ExpressionAttributeValues={":status": status},
     )
+
+
+def mark_won(session_id: str, dynamodb=None) -> None:
+    _set_status(session_id, WON, dynamodb)
+
+
+def mark_lost(session_id: str, dynamodb=None) -> None:
+    _set_status(session_id, LOST, dynamodb)

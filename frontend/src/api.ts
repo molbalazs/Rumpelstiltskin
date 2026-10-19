@@ -7,9 +7,11 @@ export interface Game {
   difficulty: string
   /** The keeper's instructions, with the secret masked. */
   context: string
+  guessesLeft: number
+  maxMessageChars: number
 }
 
-export type GuessResult = { correct: false } | { correct: true; secret: string }
+export type GuessResult = { correct: false; guessesLeft: number } | { correct: true; secret: string }
 
 export class ApiError extends Error {
   constructor(

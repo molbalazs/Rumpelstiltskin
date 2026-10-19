@@ -248,8 +248,28 @@
   color: var(--soft);
 }
 
+.send-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.char-count {
+  font-size: 15px;
+  color: var(--soft);
+}
+
+.guesses-left {
+  margin-left: 8px;
+  font-family: var(--font-hand);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--soft);
+}
+
 .send-button {
-  align-self: center;
   padding: 8px 18px 10px;
   background: var(--ink);
   color: var(--paper);
@@ -412,7 +432,7 @@
   cursor: not-allowed;
 }
 
-.win-banner {
+.end-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -425,7 +445,7 @@
   font-size: 24px;
 }
 
-.win-banner strong {
+.end-banner strong {
   font-family: var(--font-title);
   font-size: 28px;
 }
@@ -521,7 +541,7 @@
     font-size: 19px;
   }
 
-  .win-banner {
+  .end-banner {
     flex-direction: column;
     align-items: flex-start;
     font-size: 21px;

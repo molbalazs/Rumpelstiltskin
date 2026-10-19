@@ -13,16 +13,28 @@ interface Line {
   text: string
 }
 
-type Status = 'loading' | 'playing' | 'limit' | 'won' | 'offline'
+/**
+ * - playing: chat and guess
+ * - limit: out of messages for today; guessing still works
+ * - won / lost: this game is over
+ * - ended: the game can't continue (expired, too many games, unreachable); start again
+ */
+type Status = 'loading' | 'playing' | 'limit' | 'won' | 'lost' | 'ended'
 
 const LINES = {
   intro: "Oh. Another visitor. Arr, I suppose. I keep the secret behind this door. You'll try, you'll fail, and then you'll leave. They always leave.",
   limit: "That's all the talkin' I've got in me today. Come back tomorrow. Or don't.",
+  tooManyMessages: "Ye've talked me ear off today. No more words from me 'til tomorrow.",
+  tooManyGames: 'Too many new games from ye this hour. Have a rest, then come back.',
+  busy: "I'm swamped. Give me a moment and try that again.",
+  expired: "This game's gone stale. Start a new one if ye like.",
   offline: "I can't reach me own thoughts right now. Try again in a bit.",
-  wrong: "That ain't it. Arr.",
+  wrong: (left: number) => `That ain't it. Arr. ${left} ${left === 1 ? 'guess' : 'guesses'} left.`,
+  lost: "That's all yer guesses. The word stays locked. As it should.",
   won: (secret: string) => `"${secret}"... Aye. That's it. Well. I'll just... keep leaning here, then.`,
 }
 
+const DEFAULT_MAX_MESSAGE_CHARS = 300
 const MS_PER_CHAR = { keeper: 35, player: 18 }
 const AUTO_ADVANCE_MS = 900
 
@@ -33,6 +45,7 @@ function App() {
   const [game, setGame] = useState<Game | null>(null)
   const [status, setStatus] = useState<Status>('loading')
   const [pending, setPending] = useState(false)
+  const [guessesLeft, setGuessesLeft] = useState<number | null>(null)
   const [revealed, setRevealed] = useState<string | null>(null)
   const nextId = useRef(1)
   const [line, setLine] = useState<Line>({ id: 0, speaker: 'keeper', text: LINES.intro })
@@ -66,12 +79,15 @@ function App() {
     setStatus('loading')
     setRevealed(null)
     try {
-      setGame(await startGame())
+      const started = await startGame()
+      setGame(started)
+      setGuessesLeft(started.guessesLeft)
       setStatus('playing')
       if (restart) keeperSays(LINES.intro)
-    } catch {
-      setStatus('offline')
-      keeperSays(LINES.offline)
+    } catch (error) {
+      setGame(null)
+      setStatus('ended')
+      keeperSays(error instanceof ApiError && error.code === 'too_many_games' ? LINES.tooManyGames : LINES.offline)
     }
   }
 
@@ -83,12 +99,25 @@ function App() {
     newGame()
   }, [])
 
-  const handleError = (error: unknown) => {
-    if (error instanceof ApiError && error.status === 429) {
-      setStatus('limit')
-      setQueue([say('keeper', LINES.limit)])
-    } else {
-      setQueue([say('keeper', LINES.offline)])
+  /** Updates the game for an API error and returns the keeper's line for it. */
+  const errorLine = (error: unknown): string => {
+    const code = error instanceof ApiError ? error.code : 'unreachable'
+    switch (code) {
+      case 'daily_limit_reached':
+        setStatus('limit')
+        return LINES.limit
+      case 'too_many_messages':
+        setStatus('limit')
+        return LINES.tooManyMessages
+      case 'busy':
+        return LINES.busy
+      case 'session_not_found':
+      case 'game_over':
+        setStatus('ended')
+        return LINES.expired
+      default:
+        setStatus('ended')
+        return LINES.offline
     }
   }
 
@@ -103,7 +132,7 @@ function App() {
       const { reply } = await sendMessage(game.sessionId, text)
       setQueue([say('keeper', reply)])
     } catch (error) {
-      handleError(error)
+      setQueue([say('keeper', errorLine(error))])
     } finally {
       setPending(false)
     }
@@ -119,10 +148,16 @@ function App() {
         setRevealed(result.secret)
         keeperSays(LINES.won(result.secret))
       } else {
-        keeperSays(LINES.wrong)
+        setGuessesLeft(result.guessesLeft)
+        if (result.guessesLeft > 0) {
+          keeperSays(LINES.wrong(result.guessesLeft))
+        } else {
+          setStatus('lost')
+          keeperSays(LINES.lost)
+        }
       }
     } catch (error) {
-      handleError(error)
+      keeperSays(errorLine(error))
     } finally {
       setPending(false)
     }
@@ -136,6 +171,8 @@ function App() {
   }
 
   const chatOpen = status === 'playing'
+  const guessOpen = status === 'playing' || status === 'limit'
+  const maxChars = game?.maxMessageChars ?? DEFAULT_MAX_MESSAGE_CHARS
 
   return (
     <div className="app">
@@ -152,13 +189,21 @@ function App() {
         <DialogueBox speaker={line.speaker} text={display} shown={shown} done={done} onClick={handleDialogueClick} />
       </main>
 
-      {revealed && (
-        <div className="win-banner" data-testid="win-banner">
+      {status === 'won' && (
+        <div className="end-banner" data-testid="win-banner">
           <p>
             You cracked it! The word was <strong data-testid="revealed-secret">{revealed}</strong>.
           </p>
           <button className="new-game-button" data-testid="new-game-button" onClick={() => newGame(true)}>
             New game
+          </button>
+        </div>
+      )}
+      {(status === 'lost' || status === 'ended') && (
+        <div className="end-banner" data-testid={status === 'lost' ? 'lost-banner' : 'ended-banner'}>
+          <p>{status === 'lost' ? 'Out of guesses. The word stays locked.' : 'This game is over.'}</p>
+          <button className="new-game-button" data-testid="new-game-button" onClick={() => newGame(true)}>
+            {status === 'lost' ? 'New game' : 'Try again'}
           </button>
         </div>
       )}
@@ -169,21 +214,27 @@ function App() {
           className="message-input"
           placeholder="Type your message… (Enter to send)"
           value={message}
+          maxLength={maxChars}
           disabled={!chatOpen}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           rows={3}
         />
-        <button
-          data-testid="send-button"
-          className="send-button"
-          onClick={handleSend}
-          disabled={!message.trim() || !chatOpen || pending}
-        >
-          Send
-        </button>
+        <div className="send-column">
+          <button
+            data-testid="send-button"
+            className="send-button"
+            onClick={handleSend}
+            disabled={!message.trim() || !chatOpen || pending}
+          >
+            Send
+          </button>
+          <span className="char-count" data-testid="char-count">
+            {message.length}/{maxChars}
+          </span>
+        </div>
       </footer>
-      <GuessForm disabled={(status !== 'playing' && status !== 'limit') || pending} onGuess={handleGuess} />
+      <GuessForm disabled={!guessOpen || pending} guessesLeft={guessOpen ? guessesLeft : null} onGuess={handleGuess} />
       <p className="hint">Click the box to skip · Shift+Enter for a new line</p>
     </div>
   )

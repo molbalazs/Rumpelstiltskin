@@ -3,6 +3,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda'
 import * as apigateway from 'aws-cdk-lib/aws-apigatewayv2'
 import * as integrations from 'aws-cdk-lib/aws-apigatewayv2-integrations'
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
+import * as logs from 'aws-cdk-lib/aws-logs'
 import { Construct } from 'constructs'
 
 interface ApiStackProps extends cdk.StackProps {
@@ -12,6 +13,18 @@ interface ApiStackProps extends cdk.StackProps {
 }
 
 const LLM_PROVIDER = 'mock'
+
+// Only the deployed site and local dev servers may call the API from a browser.
+// Scripts ignore CORS; the stage throttle below is what bounds abuse.
+const ALLOWED_ORIGINS = [
+  'https://d3mljvfc86c0ww.cloudfront.net',
+  'http://localhost:5173',
+  'http://localhost:5174',
+]
+
+// Requests above this are rejected by API Gateway with 429 before Lambda runs:
+// at most ~864k requests/day, about $2/day across API Gateway and Lambda.
+const THROTTLE = { rateLimit: 10, burstLimit: 20 }
 
 export class ApiStack extends cdk.Stack {
   public readonly apiUrlExportName = 'RumpelstiltskinApiUrl'
@@ -44,8 +57,9 @@ export class ApiStack extends cdk.Stack {
         // A real provider must not log prompts, since they hold the secret.
         ...(LLM_PROVIDER === 'mock' ? { LLM_CALL_LOG_TABLE: props.llmCallsTable.tableName } : {}),
       },
-      timeout: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.seconds(10),
       memorySize: 256,
+      logRetention: logs.RetentionDays.ONE_WEEK,
     })
 
     props.rateLimitTable.grantReadWriteData(handler)
@@ -55,11 +69,19 @@ export class ApiStack extends cdk.Stack {
     const api = new apigateway.HttpApi(this, 'GameApi', {
       apiName: 'rumpelstiltskin-api',
       corsPreflight: {
-        allowOrigins: ['*'],
-        allowMethods: [apigateway.CorsHttpMethod.ANY],
-        allowHeaders: ['Content-Type', 'Authorization'],
+        allowOrigins: ALLOWED_ORIGINS,
+        allowMethods: [apigateway.CorsHttpMethod.GET, apigateway.CorsHttpMethod.POST],
+        allowHeaders: ['Content-Type'],
       },
     })
+
+    // Throttle the existing $default stage in place. Replacing the stage
+    // would clash with the old one over the "$default" name.
+    const stage = api.defaultStage!.node.defaultChild as apigateway.CfnStage
+    stage.defaultRouteSettings = {
+      throttlingRateLimit: THROTTLE.rateLimit,
+      throttlingBurstLimit: THROTTLE.burstLimit,
+    }
 
     api.addRoutes({
       path: '/{proxy+}',
