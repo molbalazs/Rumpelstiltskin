@@ -192,7 +192,8 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Wait for LocalStack
-        run: timeout 60 bash -c 'until curl -sf http://localhost:4566/_localstack/health | grep -q "\"dynamodb\": \"\(available\|running\)\""; do sleep 2; done'
+        run: |
+          timeout 60 bash -c 'until curl -sf http://localhost:4566/_localstack/health | jq -e ".services.dynamodb | test(\"available|running\")" > /dev/null; do sleep 2; done'
 
       - name: Start local API
         working-directory: backend
